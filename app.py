@@ -2,9 +2,8 @@ import os
 from flask import Flask, request, render_template, redirect, url_for
 import requests
 import base64
-from config import APP_ID, APP_KEY  # Import the credentials
+from config import APP_ID, APP_KEY  # Import API credentials
 
-# Replace these with your Mathpix API credentials
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -22,12 +21,19 @@ def convert_image_to_text(image_path):
         'app_key': APP_KEY,
         'Content-type': 'application/json'
     }
+    
     data = {
         'src': f'data:image/jpeg;base64,{image_base64}',
         'formats': ['text']
     }
     response = requests.post('https://api.mathpix.com/v3/text', headers=headers, json=data)
     return response.json()
+
+def solvePemdas(result):
+    equation = result["latex_styled"]
+    equation.split("+")
+    equation.split("-")
+    print(equation)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -41,8 +47,12 @@ def index():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
             result = convert_image_to_text(file_path)
+
+            solvePemdas(result)
+
             return render_template('result.html', result=result)
     return render_template('index.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
+
