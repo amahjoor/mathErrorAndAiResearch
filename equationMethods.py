@@ -11,30 +11,30 @@ def preprocessEquation(equation):
     equation = equation.replace(" ", "")
     return equation
 
-# splits numbers, parenthesis, operators
+# splits numbers, parenthesis, operators into a list
 def mathSplitElements(equation):
     # create result list and string element builder
     result = MathList()
     current = ''
-    #equation = preprocessEquation(stringEquation)
 
     operators = {'+', '-', '*', '/', '^'}
     opening_parenthesis = {'(', '[', '{'}
     closing_parenthesis = {')', ']', '}'}
 
     for char in equation:
-        if(char in opening_parenthesis or char in closing_parenthesis or char in operators):
+        if char in opening_parenthesis or char in closing_parenthesis or char in operators:
             result.appendNotNull(current)
             result.append(char)
             current = ''
         else:
             current += char
+
     result.appendNotNull(current)
 
     return result
 
+# method to group parenthesis within list
 def groupParenthesis(equation):
-    #equation = mathSplitElements(stringEquation)
     result = MathList()
     
     def findEndParenthesis(index):
@@ -68,3 +68,53 @@ def groupParenthesis(equation):
     if(len(result) == 1):
         return result[0]
     return result
+    
+# method to group a power operation within the list
+def groupPower(equation):
+    i = 0
+    result = MathList()
+
+    while i < len(equation):
+        if(equation[i] == "^"):
+            if(i > 0 and i < len(equation) - 1): # if the "^" is not the very last character or the very first character
+                result.pop() # removes last item
+                result.append([equation[i - 1], equation[i], equation[i+1]])
+                i+=2
+        else:
+            result.append(equation[i])
+            i+=1
+    return result
+
+# BELOW: Scratched approaches for identifying what operation to do on equation.
+# - I think it's more effective to group equation into lists,
+#   and to use the nested lists to identify the order of operations. 
+
+'''
+# identify highest priority operation, and computes it
+def identifyAndDo(equation):
+    operators = {'+', '-', '*', '/', '^'}
+
+    while(len(equation) > 1): # keep on identifying and doing until only 1 number
+        
+        for i in range(len(equation)):
+            if len(equation[i]) > 1:
+                equation[i].replace(equation[i], identifyAndDo(equation[i]))
+                print(equation)
+            if equation[i] in operators and len(equation) >= 2 and i > 0:
+                if(equation[i] == "^"):
+                    temp = [equation[i - 1], equation[i], equation[i+1]]
+                    temp = "".join(temp).replace("^", "**")
+                    print(temp)
+                    result = eval(temp)
+                    print(result)
+                    return
+                
+                
+        return 
+'''
+# identify lowest priority operation and add to bottom of stack
+#def createStack(equation):
+    # check if there's + and -
+    #   store indexes of values operated by plus and minus
+
+# keep on identify and doing until only one number 

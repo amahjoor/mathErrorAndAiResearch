@@ -1,4 +1,4 @@
-from equationMethods import preprocessEquation, mathSplitElements, groupParenthesis
+from equationMethods import preprocessEquation, mathSplitElements, groupParenthesis, groupPower#, identifyAndDo
 
 def solvePemdas(result):
     # Input
@@ -18,5 +18,11 @@ def solvePemdas(result):
     equation = groupParenthesis(equation)
     print("Parenthesis grouped together: ", end="")
     print(equation)
-    
+
+    equation = groupPower(equation)
+    print("Power grouped together: ", end ="")
+    #print("Identified and computed first expression, result: ", end="")
+    print(equation)    
 solvePemdas("2^{5}+[30 \\div 9]")
+solvePemdas("2^{5}+[30 \\div 9] * 4")
+#solvePemdas("3 + 2 * 4^2")
