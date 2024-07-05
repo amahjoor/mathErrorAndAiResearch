@@ -8,6 +8,7 @@ class MathList(list):
 # preprocess the equation, removing excess space and converting for the right format
 def preprocessEquation(equation):
     equation = equation.replace("\\div", "/")
+    equation = equation.replace("\\times", "*")
     equation = equation.replace(" ", "")
     return equation
 
@@ -84,6 +85,33 @@ def groupPower(equation):
             result.append(equation[i])
             i+=1
     return result
+
+# method to group multiplication and division operations
+def groupMultDiv(equation):
+    i = 0
+    result = MathList()
+
+    while i < len(equation):
+        if(equation[i] == "*" or equation[i] == "/"):
+            if i > 0 and i < len(equation) - 1:
+                result.pop()
+                result.append([equation[i - 1], equation[i], equation[i+1]])
+                i+=2
+        else:
+            result.append(equation[i])
+            i+=1
+    return result
+# POT. APPROACHES
+# 1: digging through and finding the highest priority operation, do that, repeat
+# 2: build a stack with lowest priority operations at bottom, highest at top
+#    for example 2 + 3 * 4 ^ 2 -> [2 + [3 * [4 ^ 2]]]
+#                                   top: 4 ^ 2
+#                                   then: 3 * abv
+#                                   then @ bot: 2 + abv
+#    or lets say 2 * 3 ^ 2 + 2 + 3 * 4 ^ 2 -> [2 * [3 ^ 2]] + [2] + [3 * [4 ^ 2]
+#                      pot build 3 stacks:     1 here,      1 here,    1 here.             
+
+
 
 # BELOW: Scratched approaches for identifying what operation to do on equation.
 # - I think it's more effective to group equation into lists,
