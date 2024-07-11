@@ -9,7 +9,7 @@ from flask import Flask, request, render_template, redirect, url_for
 import requests
 import base64
 from config import APP_ID, APP_KEY  # Import API credentials
-from equationMethods import preprocessEquation
+from equationMethods import preprocessEquation, checkCorrect
 
 # Initialize Flask app and set upload folder
 app = Flask(__name__)
@@ -57,6 +57,7 @@ def index():
             #result = result["latex_styled"]
             result = preprocessEquation(result)
             print(result)
+            print(checkCorrect(result))
             return render_template('result.html', result=result) # render result page with the extracted text
     return render_template('index.html') # render index page
 
