@@ -52,7 +52,9 @@ def index():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path) # save upload file to the server
             result = convert_image_to_text(file_path) # convert image to text using MathPIX API
-            #print(result)
+            if("text" not in result.keys()):
+                return "Unable to read image :( maybe try different file format?"
+            print(result)
             result = result["text"]
             #result = result["latex_styled"]
             result = preprocessEquation(result)
