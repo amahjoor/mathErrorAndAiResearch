@@ -3,7 +3,6 @@ __pycache__/
 .env
 config.py
 uploads/
-mathpix_ocr.py
-annotated/
-imgs/
+ignore/
+tensorflow/
 venv/

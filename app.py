@@ -1,9 +1,17 @@
+"""
+This Flask web application allows users to upload images of mathematical equations.
+The application processes the uploaded images by sending them to the Mathpix API,
+which extracts the text from the images. The extracted text is then displayed to the user.
+"""
+
 import os
 from flask import Flask, request, render_template, redirect, url_for
 import requests
 import base64
 from config import APP_ID, APP_KEY  # Import API credentials
+from equationMethods import preprocessEquation
 
+# Initialize Flask app and set upload folder
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -29,30 +37,30 @@ def convert_image_to_text(image_path):
     response = requests.post('https://api.mathpix.com/v3/text', headers=headers, json=data)
     return response.json()
 
-def solvePemdas(result):
-    equation = result["latex_styled"]
-    equation.split("+")
-    equation.split("-")
-    print(equation)
-
+# Route for handling upload and processing of image files
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Check if the POST request has the file apart
     if request.method == 'POST':
         if 'file' not in request.files:
             return redirect(request.url)
         file = request.files['file']
+        # handle if user doesn't select a file
         if file.filename == '':
             return redirect(request.url)
         if file:
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(file_path)
-            result = convert_image_to_text(file_path)
+            file.save(file_path) # save upload file to the server
+            result = convert_image_to_text(file_path) # convert image to text using MathPIX API
+            #print(result)
+            result = result["text"]
+            #result = result["latex_styled"]
+            result = preprocessEquation(result)
+            print(result)
+            return render_template('result.html', result=result) # render result page with the extracted text
+    return render_template('index.html') # render index page
 
-            solvePemdas(result)
-
-            return render_template('result.html', result=result)
-    return render_template('index.html')
-
+# Run the Flask app in debug mode
 if __name__ == "__main__":
     app.run(debug=True)
 
