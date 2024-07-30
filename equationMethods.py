@@ -31,17 +31,19 @@ def preprocessEquation(equation):
     equation = equation.replace("\n", "")
     equation = equation.replace("\(", "")
     equation = equation.replace("\)", "")
-    equation = equation.replace("\hline", "=")
-    #equation = equation.replace("\\", "")
+    if("\hline" in equation):
+        equation = equation.replace("\hline", "=")
+        equation.replace("\\\\", "")
+    else:
+        equation = equation.replace("\\\\", "=")
+    equation = equation.replace("\\", "")
     equation = equation.replace("end{array}", "")
-
+    print(equation)
     result = {}
     
     # if there is a description to the equation.
-    if("begin{array}{l}" in equation):
-        equation = equation.split("begin{array}{l}")    
-        #equation[1] = equation[1].split("\\\\") # split each new line
-        equation[1] = equation[1].split("\\\\") # split each new line
+    if("begin{array}{l}" in equation and equation.split("begin{array}{l}")[0] != ""):    
+        equation = equation.split("begin{array}{l}")
 
         result["word_problem"] = equation[0]
         result["given_problem"] = equation[1][0]
@@ -53,8 +55,9 @@ def preprocessEquation(equation):
                 work.append(equation[1][i]+"="+equation[1][i+1])
         result["work"] = work
     else:
+        print(equation)
         equation = equation.replace("begin{array}{r}", "") # clean equation
-        
+        equation = equation.replace("begin{array}{l}", "")
         equation = equation.split("=")
         result["given_problem"] = equation[0]
         result["student_answer"] = equation[-1]
@@ -95,12 +98,15 @@ def gptErrorCheck(equation):
     response = client.chat.completions.create(
         model='gpt-4',
         messages=[
-            {"role": "user", "content": f"{equation}\n\n if 'student_answer' = eval(given_problem), say CORRECT ^_^, otherwise return a list with the following: \n1) the specific step where this equation went wrong, without writing anything else aside from it.\n2) which line does the error occur (just write the number, nothing else)\n3) how to rectify the error.\n"}],
+            {"role": "user", "content": f"{equation}\n\n if 'student_answer' = eval(given_problem), say 'CORRECT ^_^', otherwise return a python list with the following: \n[0] the specific step where this equation went wrong, without writing anything else aside from it.\n[1] which line does the error occur (just write the number, nothing else)\n[2] Explaination of how the student did it wrong\n[3] Explain the basic steps to do it correctly [4] Attempt the correct computation\n"}],
         max_tokens=150,
         n=1,
         stop=None,
         temperature=0.7
     )    
     answer = response.choices[0].message.content.strip() # clean the answer
+    if(answer != "CORRECT ^_^"):
+        import ast
+        answer = ast.literal_eval(answer)
     return answer
 

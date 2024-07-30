@@ -58,8 +58,9 @@ def index():
             result = result["text"]
             #result = result["latex_styled"]
             result = preprocessEquation(result)
-            print(result)
-            print(checkCorrect(result))
+            #print(result)
+            #print(checkCorrect(result))
+            result = checkCorrect(result)
             return render_template('result.html', result=result) # render result page with the extracted text
     return render_template('index.html') # render index page
 
