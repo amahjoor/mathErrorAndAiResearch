@@ -11,15 +11,10 @@ class MathList(list):
         if item:
             self.append(item)
 
-# preprocess the equation, removing excess space and converting for the right format
 # Preprocess the equation by removing excess space and converting symbols to the correct format.
-# Replaces \div with / and \times with *.
-
-
-# 'text': 'Solve for \\( x \\).\n\\[\n\\begin{array}{l}\n2 x-4 \\cdot 2=9 \\\\\n2 x-8=9 \\\\\n2 x=17 \\\\\nx=8\n\\end{array}\n\\]
-# 'text': '\\( \\begin{array}{l}2 x-4 \\cdot 2=9 \\\\ 2 x-8=9 \\\\ 2 x=17 \\\\ x=8\\end{array} \\)
 
 def preprocessEquation(equation):
+    print("Before preprocessing:")
     print(equation)
     equation = equation.replace("\[", "")
     equation = equation.replace("\]", "")
@@ -28,6 +23,7 @@ def preprocessEquation(equation):
     equation = equation.replace(" ", "")
     equation = equation.replace("\\cdot", "*")
     equation = equation.replace(":", "=")
+    equation = equation.replace("&", "")
     equation = equation.replace("\n", "")
     equation = equation.replace("\(", "")
     equation = equation.replace("\)", "")
@@ -38,10 +34,18 @@ def preprocessEquation(equation):
         equation = equation.replace("\\\\", "=")
     equation = equation.replace("\\", "")
     equation = equation.replace("end{array}", "")
+    equation = equation.replace("end{aligned}", "")
+    equation = equation.replace("==", "=")
+    #equation = equation.replace("^", "**")
+    equation = equation.replace("{", "(")
+    equation = equation.replace("}", ")")
+
+    print("After preprocessing: ")
     print(equation)
+
     result = {}
     
-    # if there is a description to the equation.
+    # check for a description to the equation (problem description)
     if("begin{array}{l}" in equation and equation.split("begin{array}{l}")[0] != ""):    
         equation = equation.split("begin{array}{l}")
 
@@ -58,7 +62,12 @@ def preprocessEquation(equation):
         print(equation)
         equation = equation.replace("begin{array}{r}", "") # clean equation
         equation = equation.replace("begin{array}{l}", "")
+        equation = equation.replace("begin{aligned}", "")
         equation = equation.split("=")
+        
+        print("equation after splitting: ")
+        print(equation)
+
         result["given_problem"] = equation[0]
         result["student_answer"] = equation[-1]
         work = []
@@ -66,18 +75,23 @@ def preprocessEquation(equation):
             if(equation[i+1] != None):
                 work.append(equation[i]+"="+equation[i+1])
         result["work"] = work
+    
     return result
 
 def checkCorrect(equation):
-    if(len(equation["work"]) > 1):
-        #print(equation["given_problem"])
-        
+    if(len(equation["work"]) > 1 or "=" in equation["work"][0]):        
         # if there is a variable x (or any var in general...), use simpy method
         if("x" in equation["given_problem"]):
             if(solve(equation["given_problem"]) == solve(equation["student_answer"])):
                 return "Correct"
         else: # no variable, use eval
-            if(eval(equation["given_problem"]) == eval(equation["student_answer"])):
+            temp_given = equation["given_problem"]
+            if("^" in temp_given):
+                temp_given = temp_given.replace("^", "**")
+            temp_answer = equation["given_problem"]
+            if("^" in temp_answer):
+                temp_answer = temp_answer.replace("^", "**")
+            if(eval(temp_given) == eval(temp_answer)):
                 return "Correct"
         return gptErrorCheck(equation)
     else:
