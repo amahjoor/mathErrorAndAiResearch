@@ -19,6 +19,7 @@ def preprocessEquation(equation):
     equation = equation.replace("\[", "")
     equation = equation.replace("\]", "")
     equation = equation.replace("\\div", "/")
+    equation = equation.replace("x", "*")
     equation = equation.replace("\\times", "*")
     equation = equation.replace(" ", "")
     equation = equation.replace("\\cdot", "*")
@@ -39,6 +40,7 @@ def preprocessEquation(equation):
     #equation = equation.replace("^", "**")
     equation = equation.replace("{", "(")
     equation = equation.replace("}", ")")
+    equation = equation.replace("quad", "")
 
     print("After preprocessing: ")
     print(equation)
@@ -47,7 +49,7 @@ def preprocessEquation(equation):
     
     # check for a description to the equation (problem description)
     if("begin{array}{l}" in equation and equation.split("begin{array}{l}")[0] != ""):    
-        equation = equation.split("begin{array}{l}")
+        equation = equation.split("begin(array){l}")
 
         result["word_problem"] = equation[0]
         result["given_problem"] = equation[1][0]
@@ -60,9 +62,9 @@ def preprocessEquation(equation):
         result["work"] = work
     else:
         print(equation)
-        equation = equation.replace("begin{array}{r}", "") # clean equation
-        equation = equation.replace("begin{array}{l}", "")
-        equation = equation.replace("begin{aligned}", "")
+        equation = equation.replace("begin(array)(r)", "") # clean equation
+        equation = equation.replace("begin(array)(l)", "")
+        equation = equation.replace("begin(aligned)", "")
         equation = equation.split("=")
         
         print("equation after splitting: ")
@@ -88,9 +90,12 @@ def checkCorrect(equation):
             temp_given = equation["given_problem"]
             if("^" in temp_given):
                 temp_given = temp_given.replace("^", "**")
-            temp_answer = equation["given_problem"]
+
+            temp_answer = equation["student_answer"]
             if("^" in temp_answer):
                 temp_answer = temp_answer.replace("^", "**")
+            print(temp_given)
+            print(temp_answer)
             if(eval(temp_given) == eval(temp_answer)):
                 return "Correct"
         return gptErrorCheck(equation)
@@ -120,7 +125,10 @@ def gptErrorCheck(equation):
     )    
     answer = response.choices[0].message.content.strip() # clean the answer
     if(answer != "CORRECT ^_^"):
-        import ast
-        answer = ast.literal_eval(answer)
+        try:
+            import ast
+            answer = ast.literal_eval(answer)
+        except:
+            return gptErrorCheck(equation)
     return answer
 
