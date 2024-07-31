@@ -6,3 +6,4 @@ uploads/
 ignore/
 tensorflow/
 venv/
+cv/
